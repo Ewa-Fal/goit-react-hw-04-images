@@ -1,46 +1,24 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import LoaderSpinner from './Loader/Loader';
 import Modal from './Modal/Modal';
 
-class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    isLoading: false,
-    showModal: false,
-    selectedImage: null,
-    prevQuery: '',
-  };
+const App = () => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  componentDidUpdate(_, prevState) {
-    const { query, page, images } = this.state;
-    if (prevState.query !== query || prevState.page !== page) {
-      this.fetchImages();
-    } else if (
-      prevState.images.length !== images.length &&
-      prevState.images.length !== 0
-    ) {
-      this.scrollToBottom();
-    }
-  }
-
-  handleSearch = query => {
-    if (query !== this.state.prevQuery) {
-      this.setState({ query, images: [], page: 1, prevQuery: query });
-    }
-  };
-
-  fetchImages = async () => {
-    const { query, page } = this.state;
+  const fetchImages = async (query, page) => {
     const perPage = 12;
-    const apiKey = '38263163-c69ed86c048ff52b4b056a3be';
+    const apiKey = '38129363-ebf30580ea635c0303c0013d8';
     const url = `https://pixabay.com/api/?key=${apiKey}&q=${query}&image_type=photo&pretty=true&page=${page}&per_page=${perPage}`;
 
-    this.setState({ isLoading: true });
+    setIsLoading(true);
 
     try {
       const response = await fetch(url);
@@ -53,20 +31,47 @@ class App extends Component {
         throw new Error('No images found for the given query');
       }
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
-      }));
+      setImages(prevImages =>
+        page === 1 ? data.hits : [...prevImages, ...data.hits]
+      );
 
       setTimeout(() => {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }, 500);
     } catch (error) {
       console.error(error.message);
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
   };
 
-  scrollToBottom = () => {
+  useEffect(() => {
+    if (query) {
+      fetchImages(query, page);
+    }
+  }, [query, page]);
+
+  const handleSearch = (event, query) => {
+    event.preventDefault();
+    setImages([]);
+    setPage(1);
+    setQuery(query);
+  };
+
+  const handleLoadMore = () => {
+    setPage(page + 1);
+  };
+
+  const handleImageClick = image => {
+    setShowModal(true);
+    setSelectedImage(image);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedImage(null);
+  };
+
+  const scrollToBottom = () => {
     let currentScrollPosition = window.scrollY;
     let targetScrollPosition = document.body.scrollHeight - window.innerHeight;
     let scrollStep = Math.round(
@@ -85,33 +90,24 @@ class App extends Component {
     window.requestAnimationFrame(smoothScroll);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
+  useEffect(() => {
+    if (images.length > 0 && !isLoading) {
+      scrollToBottom();
+    }
+  }, [images, isLoading]);
 
-  handleImageClick = image => {
-    this.setState({ showModal: true, selectedImage: image });
-  };
+  return (
+    <div className="App">
+      <Searchbar onSubmit={(event, query) => handleSearch(event, query)} />
 
-  closeModal = () => {
-    this.setState({ showModal: false, selectedImage: null });
-  };
-
-  render() {
-    const { images, isLoading, showModal, selectedImage } = this.state;
-
-    return (
-      <div className="App">
-        <Searchbar onSubmit={this.handleSearch} />
-        <ImageGallery images={images} onImageClick={this.handleImageClick} />
-        {isLoading && <LoaderSpinner />}
-        {images.length > 0 && !isLoading && (
-          <Button onClick={this.handleLoadMore}>Load more</Button>
-        )}
-        {showModal && <Modal image={selectedImage} onClose={this.closeModal} />}
-      </div>
-    );
-  }
-}
+      <ImageGallery images={images} onImageClick={handleImageClick} />
+      {isLoading && <LoaderSpinner />}
+      {images.length > 0 && !isLoading && (
+        <Button onClick={handleLoadMore}>Load more</Button>
+      )}
+      {showModal && <Modal image={selectedImage} onClose={closeModal} />}
+    </div>
+  );
+};
 
 export default App;

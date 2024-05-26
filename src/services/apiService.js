@@ -1,4 +1,4 @@
-import axios from 'axios';
+/*import axios from 'axios';
 
 const api = async (query, page) => {
   const searchParams = new URLSearchParams({
@@ -19,3 +19,4 @@ const api = async (query, page) => {
 };
 
 export default api;
+*/

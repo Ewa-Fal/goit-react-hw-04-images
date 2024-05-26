@@ -1,18 +1,19 @@
 .Button {
-    padding: 8px 16px;
-    background-color: lightskyblue;
-    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    justify-content: center;
-    color: slategrey;
-    cursor: pointer;
-    font-size: 18px;
-    min-width: 180px;
-    margin: 0 auto;
-    border-color: aliceblue;
-  }
-  .Button:hover,
-  .Button:focus {
-    background-color: slategray;
-    color: lightskyblue;
-  }
+  padding: 8px 16px;
+  background-color: seashell;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: center;
+  color: slateblue;
+  cursor: pointer;
+  font-size: 18px;
+  min-width: 180px;
+  margin: 0 auto;
+  border-color: slateblue;
+}
+.Button:hover,
+.Button:focus {
+  background-color: slateblue;
+  color: seashell;
+  border-color: seashell;
+}
